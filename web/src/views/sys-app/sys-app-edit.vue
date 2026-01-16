@@ -25,7 +25,7 @@
         </span>
         <el-input v-model="form.url" placeholder="请输入推送地址" maxlength="400" v-trim/>
       </el-form-item>
-      <el-form-item label="请求头">
+      <el-form-item label="接口认证">
         <http-auth-builder v-model="form.httpAuth"></http-auth-builder>
       </el-form-item>
       <el-form-item prop="resultExp">

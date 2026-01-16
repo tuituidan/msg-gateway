@@ -1,7 +1,7 @@
 <template>
   <div class="app-container home">
     <el-form :model="queryParams"
-             ref="queryForm" size="small" :inline="true" label-width="68px">
+             ref="queryForm" size="small" :inline="true" label-width="90px">
       <el-form-item label="应用" prop="appId">
         <el-select v-model="queryParams.appId" clearable placeholder="请选择应用">
           <el-option
@@ -22,10 +22,10 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="日志ID" prop="dataLogId">
+      <el-form-item label="接口日志ID" prop="logId">
         <el-input
-          v-model="queryParams.dataLogId"
-          placeholder="请输入日志ID"
+          v-model="queryParams.logId"
+          placeholder="请输入接口日志ID"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -55,7 +55,7 @@
               :default-sort="{prop: 'pushTime', order: 'descending'}">
       <el-table-column type="selection" width="50" align="center"/>
       <el-table-column label="序号" type="index" width="50" align="center" :index="table.index"/>
-      <el-table-column label="日志ID" align="center" prop="dataLogId" show-overflow-tooltip/>
+      <el-table-column label="接口日志ID" align="center" prop="logId" show-overflow-tooltip/>
       <el-table-column label="应用名称" align="center" prop="appName" show-overflow-tooltip/>
       <el-table-column label="推送状态" align="center" prop="status" show-overflow-tooltip>
         <template slot-scope="scope">
@@ -98,7 +98,7 @@ export default {
         pageIndex: 1,
         offset: 0,
         limit: 10,
-        dataLogId: '',
+        logId: '',
         appId: '',
         status: '',
         sort: '-pushTime',
@@ -139,7 +139,7 @@ export default {
     },
     handleQuery() {
       this.loading = true;
-      this.$http.get('/api/v1/log/push/page', {params: this.queryParams})
+      this.$http.get('/api/v1/log/push_log/page', {params: this.queryParams})
         .then(res => {
           this.table = res;
         })
@@ -153,7 +153,7 @@ export default {
         pageIndex: 1,
         offset: 0,
         limit: 10,
-        dataLogId: '',
+        logId: '',
         appId: '',
         status: '',
         sort: this.queryParams.sort

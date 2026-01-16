@@ -29,16 +29,25 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     logoutHandler() {
-      this.$http.post('/logout')
-        .then(() => {
-          const STORAGE_KEY = 'login_info';
-          const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-          if (data) {
-            data.autoLogin = false;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      this.$confirm('确定注销并退出系统吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http.post('/logout')
+          .then(() => {
+            const STORAGE_KEY = 'login_info';
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (data) {
+              data.autoLogin = false;
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
             location.href = '/';
-          }
-        })
+          })
+      }).catch(() => {
+      })
+
+
     },
   }
 }

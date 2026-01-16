@@ -1,7 +1,9 @@
 package com.tuituidan.openhub.mapper;
 
 import com.tuituidan.openhub.bean.entity.SysEntryApiLog;
+import com.tuituidan.openhub.bean.vo.SysEntryApiLogView;
 import com.tuituidan.tresdin.mybatis.mapper.BaseExtMapper;
+import java.util.List;
 
 /**
  * SysEntryApiLogMapper.
@@ -12,4 +14,11 @@ import com.tuituidan.tresdin.mybatis.mapper.BaseExtMapper;
  */
 public interface SysEntryApiLogMapper extends BaseExtMapper<SysEntryApiLog> {
 
+    /**
+     * selectList
+     *
+     * @param search search
+     * @return List
+     */
+    List<SysEntryApiLogView> selectList(SysEntryApiLog search);
 }

@@ -4,12 +4,11 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.tuituidan.openhub.bean.dto.HttpRequestDto;
-import com.tuituidan.openhub.bean.entity.SysEntryApi;
 import com.tuituidan.openhub.bean.entity.SysEntryApiLog;
 import com.tuituidan.openhub.bean.vo.AjaxResult;
+import com.tuituidan.openhub.bean.vo.SysEntryApiView;
 import com.tuituidan.openhub.consts.EntryStatusEnum;
 import com.tuituidan.openhub.mapper.SysEntryApiLogMapper;
-import com.tuituidan.openhub.mapper.SysEntryApiMapper;
 import com.tuituidan.openhub.util.HttpAuthUtils;
 import com.tuituidan.tresdin.mybatis.util.SnowFlake;
 import com.tuituidan.tresdin.util.ExpParserUtils;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -45,21 +45,22 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class MsgGatewayService {
 
     @Resource
-    private SysEntryApiMapper sysEntryApiMapper;
-
-    @Resource
     private SysEntryApiLogMapper sysEntryApiLogMapper;
 
     @Resource
     private MsgPushService msgPushService;
 
+    @Resource
+    private CacheService cacheService;
+
     @ResponseBody
     public AjaxResult<String> msgGateway() {
         HttpRequestDto httpRequest = getHttpRequest();
-        List<SysEntryApi> apiList = sysEntryApiMapper.select(new SysEntryApi().setPath(httpRequest.getUrl()));
-        List<SysEntryApi> expApiList = new ArrayList<>();
-        SysEntryApi defEntryApi = null;
-        for (SysEntryApi item : apiList) {
+        List<SysEntryApiView> apiList = cacheService.getEntryApiViewCache().asMap().values().stream()
+                .filter(it -> Objects.equals(httpRequest.getUrl(), it.getPath())).collect(Collectors.toList());
+        List<SysEntryApiView> expApiList = new ArrayList<>();
+        SysEntryApiView defEntryApi = null;
+        for (SysEntryApiView item : apiList) {
             if (StringUtils.isBlank(item.getTypeExp())) {
                 defEntryApi = item;
                 continue;
@@ -75,17 +76,20 @@ public class MsgGatewayService {
             insertEntryApiLog(null, httpRequest, EntryStatusEnum.UNKNOWN);
             return AjaxResult.success();
         }
-        List<SysEntryApi> validApiList = new ArrayList<>();
-        for (SysEntryApi item : expApiList) {
+        List<SysEntryApiView> validApiList = new ArrayList<>();
+        for (SysEntryApiView item : expApiList) {
             if (authCheck(item, httpRequest)) {
                 validApiList.add(item);
             } else {
                 insertEntryApiLog(item, httpRequest, EntryStatusEnum.UN_AUTH);
             }
         }
-        for (SysEntryApi item : validApiList) {
+        for (SysEntryApiView item : validApiList) {
             Long logId = insertEntryApiLog(item, httpRequest, EntryStatusEnum.SUCCESS);
-            CompletableUtils.runAsync(() -> msgPushService.push(logId, item, httpRequest), "receive-pool");
+            if (CollectionUtils.isNotEmpty(item.getAppList())) {
+                CompletableUtils.runAsync(() -> msgPushService.push(logId, item.getAppList(),
+                        httpRequest), "receive-pool");
+            }
         }
         return AjaxResult.success();
     }
@@ -109,9 +113,7 @@ public class MsgGatewayService {
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement().toLowerCase();
-            if (!StringUtils.equals(headerName, "cookie")) {
-                requestDto.getHeaders().put(headerName, request.getHeader(headerName));
-            }
+            requestDto.getHeaders().put(headerName, request.getHeader(headerName));
         }
         return requestDto;
     }
@@ -128,7 +130,7 @@ public class MsgGatewayService {
         return result;
     }
 
-    private boolean authCheck(SysEntryApi entryApi, HttpRequestDto httpRequest) {
+    private boolean authCheck(SysEntryApiView entryApi, HttpRequestDto httpRequest) {
         try {
             HttpAuthUtils.checkHttpAuth(httpRequest.getHeaders(), entryApi.getHttpAuth());
             return true;
@@ -138,7 +140,7 @@ public class MsgGatewayService {
         }
     }
 
-    private Long insertEntryApiLog(SysEntryApi entryApi, HttpRequestDto httpRequest,
+    private Long insertEntryApiLog(SysEntryApiView entryApi, HttpRequestDto httpRequest,
             EntryStatusEnum statusEnum) {
         SysEntryApiLog log = new SysEntryApiLog()
                 .setId(SnowFlake.newId())

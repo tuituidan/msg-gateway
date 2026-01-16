@@ -1,5 +1,6 @@
 package com.tuituidan.openhub.bean.vo;
 
+import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.tuituidan.openhub.translator.SysAppAnno;
 import com.tuituidan.tresdin.datatranslate.translator.dict.DictType;
@@ -31,17 +32,19 @@ public class SysPushLogView {
     private String response;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime pushTime;
 
     private Long costTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Integer pushTimes;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
 }

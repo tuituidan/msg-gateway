@@ -2,6 +2,7 @@ package com.tuituidan.openhub.bean.entity;
 
 import com.tuituidan.tresdin.mybatis.bean.IEntity;
 import java.time.LocalDateTime;
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -34,12 +35,14 @@ public class SysPushLog implements IEntity<SysPushLog, Long> {
 
     private String response;
 
+    @Column(name = "push_time")
     private LocalDateTime pushTime;
 
     private Long costTime;
 
     private Integer pushTimes;
 
+    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

@@ -50,7 +50,7 @@ export default {
         this.noticeText = `当前选择数据${rows.length}条，点击推送进行推送`;
       } else {
         this.noticeText = '未选择任何数据，将推送所有推送失败的数据';
-        this.$http.get('/api/v1/push_log/fail_count')
+        this.$http.get('/api/v1/log/push_log/fail_count')
           .then(res => {
             this.dataList = res;
             if (this.dataList.length) {
@@ -66,7 +66,7 @@ export default {
       this.failNum = 0;
       this.showPushBtn = false;
       for (let i = 1; i <= total; i++) {
-        await this.$http.post(`/api/v1/push_log/${this.dataList[i - 1]}`)
+        await this.$http.post(`/api/v1/log/push_log/${this.dataList[i - 1]}`)
           .then(() => {
             this.successNum++;
           })

@@ -10,13 +10,15 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="表名" prop="tableName">
-        <el-input
-          v-model="queryParams.tableName"
-          placeholder="请输入表名"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="接收状态" prop="status">
+        <el-select v-model="queryParams.status" clearable placeholder="请选择推送状态">
+          <el-option
+            v-for="item in statusOptions"
+            :key="item.code"
+            :label="item.name"
+            :value="item.code">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -55,8 +57,20 @@
       <el-table-column label="接口路径" align="center" prop="path" show-overflow-tooltip/>
       <el-table-column label="客户端IP" align="center" prop="clientIp" show-overflow-tooltip/>
       <el-table-column label="接口名称" align="center" prop="entryApiName" show-overflow-tooltip/>
-      <el-table-column label="状态" align="center" prop="statusText" show-overflow-tooltip/>
+      <el-table-column label="接收状态" align="center" prop="statusText" show-overflow-tooltip/>
       <el-table-column label="接收时间" align="center" prop="createTime" show-overflow-tooltip/>
+      <el-table-column label="推送应用数" align="center" prop="pushAppCount" show-overflow-tooltip/>
+      <el-table-column label="操作" align="center" width="110" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-document"
+            @click.stop="$router.push({name: 'api-log-detail', params: {id: scope.row.id}})"
+          >查看
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination
@@ -77,13 +91,27 @@ export default {
     return {
       // 遮罩层
       loading: false,
+      statusOptions: [
+        {
+          code: '01',
+          name: '接收成功',
+        },
+        {
+          code: '02',
+          name: '没有匹配的api接收',
+        },
+        {
+          code: '03',
+          name: '接口认证未通过',
+        },
+      ],
       // 查询参数
       queryParams: {
         pageIndex: 1,
         offset: 0,
         limit: 10,
         path: '',
-        tableName: '',
+        status: '',
         sort: '-createTime',
       },
       table: {
@@ -104,8 +132,11 @@ export default {
     },
     handleQuery() {
       this.loading = true;
-      this.$http.get('/api/v1/log/api/page', {params: this.queryParams})
+      this.$http.get('/api/v1/log/api_log/page', {params: this.queryParams})
         .then(res => {
+          for (const item of res.data) {
+            item.children = [];
+          }
           this.table = res;
         })
         .finally(() => {
@@ -119,7 +150,7 @@ export default {
         offset: 0,
         limit: 10,
         path: '',
-        tableName: '',
+        status: '',
         sort: this.queryParams.sort
       };
       this.handleQuery();

@@ -1,7 +1,7 @@
 {
   "name": "msg-gateway-web",
   "version": "1.0.0",
-  "description": "数据分发服务",
+  "description": "数据网关服务",
   "author": "tuituidan",
   "license": "MIT",
   "scripts": {

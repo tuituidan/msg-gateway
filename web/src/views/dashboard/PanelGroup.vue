@@ -7,7 +7,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            数据日志
+            接收数据条数
           </div>
           <div class="card-panel-num"><span v-text="dataLogCount"></span>条</div>
         </div>
@@ -20,7 +20,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            推送日志
+            推送数据条数
           </div>
           <div class="card-panel-num"><span v-text="pushLogCount"></span>条</div>
         </div>
@@ -33,7 +33,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            本日推送成功
+            本日推送成功条数
           </div>
           <div class="card-panel-num"><span v-text="pushSuccessLogCount"></span>条</div>
         </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            本日推送失败
+            本日推送失败条数
           </div>
           <div class="card-panel-num"><span v-text="pushFailLogCount"></span>条</div>
         </div>
@@ -71,7 +71,7 @@ export default {
   },
   methods: {
     init() {
-      this.$http.get('/api/v1/home/data_log/count')
+      this.$http.get('/api/v1/home/api_log/count')
         .then(res => {
           this.dataLogCount = res;
         });

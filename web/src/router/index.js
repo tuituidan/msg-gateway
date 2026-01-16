@@ -56,10 +56,22 @@ export const constantRoutes = [
         meta: {title: '接口日志', icon: 'dashboard'}
       },
       {
+        path: '/log/api/:id',
+        component: () => import('@/views/api-log/detail'),
+        name: 'api-log-detail',
+        meta: {title: '接口日志详情', icon: 'dashboard'}
+      },
+      {
         path: '/log/push',
         component: () => import('@/views/push-log/index'),
         name: 'push-log',
         meta: {title: '推送日志', icon: 'dashboard'}
+      },
+      {
+        path: '/system/entry-api',
+        component: () => import('@/views/entry-api/index'),
+        name: 'entry-api',
+        meta: {title: '接口配置', icon: 'dashboard'}
       },
       {
         path: '/system/app',
@@ -67,7 +79,8 @@ export const constantRoutes = [
         name: 'system-app',
         meta: {title: '应用配置', icon: 'dashboard'}
       },
-    ]
+    ],
+
   },
 ]
 

@@ -32,6 +32,9 @@ public class SysAppService {
     @Resource
     private SysAppApiRefMapper sysAppApiRefMapper;
 
+    @Resource
+    private CacheService cacheService;
+
     /**
      * selectApiIdsByAppId
      *
@@ -50,6 +53,7 @@ public class SysAppService {
                     .map(apiId -> new SysAppApiRef().setAppId(appId)
                             .setEntryApiId(apiId)).collect(Collectors.toList()));
         }
+        cacheService.refreshAppViewCache(appId);
     }
 
     /**
@@ -73,10 +77,11 @@ public class SysAppService {
         SysApp saveItem = BeanExtUtils.convert(param, SysApp::new);
         if (id == null) {
             sysAppMapper.insertSelective(saveItem);
-            return;
+        } else {
+            saveItem.setId(id);
+            sysAppMapper.updateByPrimaryKeySelective(saveItem);
         }
-        saveItem.setId(id);
-        sysAppMapper.updateByPrimaryKeySelective(saveItem);
+        cacheService.refreshAppViewCache(saveItem.getId());
     }
 
     private void checkUnique(Long id, SysAppDto param) {
@@ -92,6 +97,7 @@ public class SysAppService {
      */
     public void delete(Long id) {
         sysAppMapper.deleteByPrimaryKey(id);
+        cacheService.refreshAppViewCache(id);
     }
 
 }

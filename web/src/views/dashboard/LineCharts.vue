@@ -60,6 +60,19 @@ export default {
       this.echartsOptions.series = [];
       this.$http.get(this.url)
         .then(res => {
+          if (Array.isArray(res)) {
+            const values = [];
+            for (const item of res) {
+              this.echartsOptions.xAxis.data.push(item.xdata);
+              values.push(item.ydata);
+            }
+            this.echartsOptions.series.push({
+              type: 'line',
+              data: values
+            });
+            this.echartsRef.setOption(this.echartsOptions);
+            return;
+          }
           for (const item of res[Object.keys(res)[0]]) {
             this.echartsOptions.xAxis.data.push(item.xdata);
           }

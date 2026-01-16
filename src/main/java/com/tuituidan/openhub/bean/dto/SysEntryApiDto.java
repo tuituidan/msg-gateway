@@ -16,6 +16,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class SysEntryApiDto {
 
+    private Long typeId;
+
     private String path;
 
     private String typeExp;

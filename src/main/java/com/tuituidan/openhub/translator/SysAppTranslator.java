@@ -1,7 +1,7 @@
 package com.tuituidan.openhub.translator;
 
-import com.tuituidan.openhub.bean.entity.SysApp;
-import com.tuituidan.openhub.mapper.SysAppMapper;
+import com.tuituidan.openhub.bean.vo.SysAppView;
+import com.tuituidan.openhub.service.CacheService;
 import com.tuituidan.tresdin.datatranslate.bean.TranslationParameter;
 import com.tuituidan.tresdin.datatranslate.translator.ITranslator;
 import java.util.Objects;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 public class SysAppTranslator implements ITranslator<SysAppAnno> {
 
     @Resource
-    private SysAppMapper sysAppMapper;
+    private CacheService cacheService;
 
     @Override
     public String getFieldName(String fieldName) {
@@ -36,8 +36,8 @@ public class SysAppTranslator implements ITranslator<SysAppAnno> {
         if (Objects.isNull(value)) {
             return StringUtils.EMPTY;
         }
-        return Optional.ofNullable(sysAppMapper.selectByPrimaryKey(value))
-                .map(SysApp::getAppName).orElse(StringUtils.EMPTY);
+        return Optional.ofNullable(cacheService.getAppViewCache().getIfPresent(value))
+                .map(SysAppView::getAppName).orElse(StringUtils.EMPTY);
     }
 
 }

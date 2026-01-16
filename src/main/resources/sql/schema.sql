@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `sys_entry_api` (
     `path` varchar(100) NOT NULL COMMENT '拦截地址',
     `type_exp` varchar(100) DEFAULT NULL COMMENT '数据类型表达式',
     `name` varchar(100) NOT NULL COMMENT '接口名称',
-    `http_auth` varchar(100) DEFAULT NULL COMMENT '请求验证',
+    `http_auth` varchar(1000) DEFAULT NULL COMMENT '请求验证',
     `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`) USING BTREE
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `sys_entry_api_log` (
 
 CREATE TABLE IF NOT EXISTS `sys_push_log` (
     `id` bigint(20) NOT NULL COMMENT '主键',
-    `logId` bigint(20) NOT NULL COMMENT '数据日志ID',
+    `log_id` bigint(20) NOT NULL COMMENT '数据日志ID',
     `app_id` bigint(20) NOT NULL COMMENT '应用ID',
     `status` varchar(100) NOT NULL COMMENT '推送状态',
     `response` varchar(4000) NOT NULL COMMENT '推送结果',

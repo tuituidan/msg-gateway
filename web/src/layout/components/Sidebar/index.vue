@@ -66,7 +66,7 @@ export default {
             {
               path: 'api',
               name: 'api-log',
-              meta: {title: '接口日志', icon: 'dashboard'}
+              meta: {title: '接口日志', icon: 'dashboard'},
             },
             {
               path: 'push',
@@ -81,6 +81,11 @@ export default {
           meta: {title: '基础设置', icon: 'dashboard'},
           children: [
             {
+              path: 'entry-api',
+              name: 'entry-api',
+              meta: {title: '接口配置', icon: 'dashboard'}
+            },
+            {
               path: 'app',
               name: 'system-app',
               meta: {title: '应用配置', icon: 'dashboard'}
@@ -92,7 +97,6 @@ export default {
   },
   mounted() {
   },
-  methods: {
-  }
+  methods: {}
 };
 </script>

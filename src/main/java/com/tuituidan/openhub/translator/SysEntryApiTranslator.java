@@ -1,7 +1,7 @@
 package com.tuituidan.openhub.translator;
 
-import com.tuituidan.openhub.bean.entity.SysEntryApi;
-import com.tuituidan.openhub.mapper.SysEntryApiMapper;
+import com.tuituidan.openhub.bean.vo.SysEntryApiView;
+import com.tuituidan.openhub.service.CacheService;
 import com.tuituidan.tresdin.datatranslate.bean.TranslationParameter;
 import com.tuituidan.tresdin.datatranslate.translator.ITranslator;
 import java.util.Objects;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 public class SysEntryApiTranslator implements ITranslator<SysEntryApiAnno> {
 
     @Resource
-    private SysEntryApiMapper sysEntryApiMapper;
+    private CacheService cacheService;
 
     @Override
     public String getFieldName(String fieldName) {
@@ -36,8 +36,8 @@ public class SysEntryApiTranslator implements ITranslator<SysEntryApiAnno> {
         if (Objects.isNull(value)) {
             return StringUtils.EMPTY;
         }
-        return Optional.ofNullable(sysEntryApiMapper.selectByPrimaryKey(value))
-                .map(SysEntryApi::getName).orElse(StringUtils.EMPTY);
+        return Optional.ofNullable(cacheService.getEntryApiViewCache().getIfPresent(value))
+                .map(SysEntryApiView::getName).orElse(StringUtils.EMPTY);
     }
 
 }

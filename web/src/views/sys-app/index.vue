@@ -13,10 +13,10 @@
 
 <script>
 export default {
-  name: "system-datasource",
+  name: "sys-app-index",
   components: {
-    'sys-app': () => import('./sys-app'),
-    'app-api-config': () => import('./app-api-config'),
+    'sys-app': () => import('@/views/sys-app/sys-app'),
+    'app-api-config': () => import('@/views/sys-app/app-api-config'),
   },
   data() {
     return {};

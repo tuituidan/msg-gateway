@@ -2,6 +2,7 @@ package com.tuituidan.openhub.bean.entity;
 
 import com.tuituidan.tresdin.mybatis.bean.IEntity;
 import java.time.LocalDateTime;
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -38,6 +39,7 @@ public class SysEntryApiLog implements IEntity<SysEntryApiLog, Long> {
 
     private String status;
 
+    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

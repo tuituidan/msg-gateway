@@ -4,6 +4,7 @@ import com.tuituidan.openhub.bean.entity.SysEntryApiLog;
 import com.tuituidan.openhub.bean.entity.SysPushLog;
 import com.tuituidan.openhub.bean.vo.SysEntryApiLogView;
 import com.tuituidan.openhub.bean.vo.SysPushLogView;
+import com.tuituidan.openhub.consts.PushStatusEnum;
 import com.tuituidan.openhub.mapper.SysEntryApiLogMapper;
 import com.tuituidan.openhub.mapper.SysPushLogMapper;
 import com.tuituidan.tresdin.mybatis.QueryHelper;
@@ -32,12 +33,15 @@ public class SysLogService {
     private SysPushLogMapper sysPushLogMapper;
 
     public PageData<List<SysEntryApiLogView>> selectApiLogPage(PageParam pageParam, SysEntryApiLog search) {
-        PageData<List<SysEntryApiLog>> pageData = QueryHelper.queryPage(pageParam.getOffset(),
+        return QueryHelper.queryPage(pageParam.getOffset(),
                 pageParam.getLimit(), () -> {
                     QueryHelper.orderBy(pageParam.getSort(), SysEntryApiLog.class);
-                    return sysEntryApiLogMapper.select(search);
+                    return sysEntryApiLogMapper.selectList(search);
                 });
-        return QueryHelper.mapPage(pageData, log -> BeanExtUtils.convert(log, SysEntryApiLogView::new));
+    }
+
+    public SysEntryApiLogView selectApiLogById(Long id) {
+        return BeanExtUtils.convert(sysEntryApiLogMapper.selectByPrimaryKey(id), SysEntryApiLogView::new);
     }
 
     public List<SysPushLogView> selectPushLogByAppId(Long apiLogId) {
@@ -52,7 +56,12 @@ public class SysLogService {
                     QueryHelper.orderBy(pageParam.getSort(), SysPushLog.class);
                     return sysPushLogMapper.select(search);
                 });
-        return QueryHelper.mapPage(pageData, log -> BeanExtUtils.convert(log, SysPushLogView::new));
+        return QueryHelper.mapPage(pageData, it -> BeanExtUtils.convert(it, SysPushLogView::new));
+    }
+
+    public List<Long> getFailPushLogIds() {
+        return sysPushLogMapper.select(new SysPushLog().setStatus(PushStatusEnum.FAIL.getCode()))
+                .stream().map(SysPushLog::getId).collect(Collectors.toList());
     }
 
 }

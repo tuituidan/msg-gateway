@@ -2,11 +2,11 @@ package com.tuituidan.openhub.service;
 
 import com.alibaba.fastjson2.JSON;
 import com.tuituidan.openhub.bean.dto.HttpRequestDto;
-import com.tuituidan.openhub.bean.entity.SysApp;
-import com.tuituidan.openhub.bean.entity.SysEntryApi;
+import com.tuituidan.openhub.bean.entity.SysEntryApiLog;
 import com.tuituidan.openhub.bean.entity.SysPushLog;
+import com.tuituidan.openhub.bean.vo.SysAppView;
 import com.tuituidan.openhub.consts.PushStatusEnum;
-import com.tuituidan.openhub.mapper.SysAppApiRefMapper;
+import com.tuituidan.openhub.mapper.SysEntryApiLogMapper;
 import com.tuituidan.openhub.mapper.SysPushLogMapper;
 import com.tuituidan.openhub.util.HttpAuthUtils;
 import com.tuituidan.tresdin.util.ExpParserUtils;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpEntity;
@@ -40,7 +39,7 @@ import org.springframework.web.client.RestTemplate;
 public class MsgPushService {
 
     @Resource
-    private SysAppApiRefMapper sysAppApiRefMapper;
+    private SysEntryApiLogMapper sysEntryApiLogMapper;
 
     @Resource
     private SysPushLogMapper sysPushLogMapper;
@@ -48,24 +47,22 @@ public class MsgPushService {
     @Resource
     private RestTemplate restTemplate;
 
+    @Resource
+    private CacheService cacheService;
+
     /**
      * push.
      *
      * @param logId logId
-     * @param entryApi entryApi
      * @param httpRequest httpRequest
      */
-    public void push(Long logId, SysEntryApi entryApi, HttpRequestDto httpRequest) {
-        List<SysApp> sysApps = sysAppApiRefMapper.selectAppsByApiId(entryApi.getId());
-        if (CollectionUtils.isEmpty(sysApps)) {
-            return;
-        }
-        if (sysApps.size() == 1) {
-            pushToApp(logId, sysApps.get(0), JSON.toJSONString(httpRequest.getBody()));
+    public void push(Long logId, List<SysAppView> appList, HttpRequestDto httpRequest) {
+        if (appList.size() == 1) {
+            pushToApp(logId, appList.get(0), JSON.toJSONString(httpRequest.getBody()));
             return;
         }
         List<CompletableFuture<?>> futures = new ArrayList<>();
-        for (SysApp sysApp : sysApps) {
+        for (SysAppView sysApp : appList) {
             futures.add(CompletableUtils.runAsync(() -> pushToApp(logId, sysApp,
                             JSON.toJSONString(httpRequest.getBody())),
                     "push-pool").exceptionally(ex -> {
@@ -76,7 +73,7 @@ public class MsgPushService {
         CompletableUtils.waitAll(futures);
     }
 
-    private void pushToApp(Long logId, SysApp sysApp, String postData) {
+    public void pushToApp(Long logId, SysAppView sysApp, String postData) {
         SysPushLog pushLog = new SysPushLog();
         long startTime = System.currentTimeMillis();
         pushLog.setAppId(sysApp.getId())
@@ -88,7 +85,19 @@ public class MsgPushService {
         sysPushLogMapper.insert(pushLog);
     }
 
-    private void pushToApp(SysPushLog pushLog, SysApp sysApp, String postData) {
+    public void rePushToApp(Long id) {
+        SysPushLog oldPushLog = sysPushLogMapper.selectByPrimaryKey(id);
+        SysEntryApiLog apiLog = sysEntryApiLogMapper.selectByPrimaryKey(oldPushLog.getLogId());
+        SysAppView appView = cacheService.getAppViewCache().getIfPresent(oldPushLog.getAppId());
+        SysPushLog pushLog = new SysPushLog().setId(id).setPushTime(LocalDateTime.now());
+        long startTime = System.currentTimeMillis();
+        pushToApp(pushLog, appView, apiLog.getBody());
+        pushLog.setCostTime(System.currentTimeMillis() - startTime);
+        pushLog.setPushTimes(oldPushLog.getPushTimes() + 1);
+        sysPushLogMapper.updateByPrimaryKeySelective(pushLog);
+    }
+
+    private void pushToApp(SysPushLog pushLog, SysAppView sysApp, String postData) {
         try {
             HttpHeaders httpHeaders = HttpAuthUtils.buildHttpHeaders(sysApp.getHttpAuth());
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -103,7 +112,7 @@ public class MsgPushService {
         }
     }
 
-    private String analysePushStatus(ResponseEntity<String> response, SysApp sysApp) {
+    private String analysePushStatus(ResponseEntity<String> response, SysAppView sysApp) {
         if (StringUtils.isBlank(sysApp.getResultExp())) {
             return response.getStatusCode().is2xxSuccessful()
                     ? PushStatusEnum.SUCCESS.getCode() : PushStatusEnum.FAIL.getCode();

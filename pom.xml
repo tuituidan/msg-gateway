@@ -19,8 +19,6 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <front.path>${basedir}/web</front.path>
-        <maven.npm.skip>true</maven.npm.skip>
     </properties>
     <dependencies>
         <dependency>

@@ -1,7 +1,6 @@
 <template>
   <div>
-    <el-row type="flex" justify="space-between">
-      <div></div>
+    <el-row type="flex" justify="end">
       <el-row class="mb8 mt5">
         <el-col :span="1.5">
           <el-button
@@ -18,48 +17,33 @@
     <el-table
       stripe
       border
-      highlight-current-row
       ref="dataTable"
       v-loading="loading"
-      @row-click="rowClickHandler"
-      @current-change="currentRowChange"
       :data="dataList">
+      <el-table-column label="序号" type="index" width="50" align="center"/>
       <el-table-column type="expand" label="展开">
         <template slot-scope="props">
           <div class="table-expand">
             <el-form :model="props.row" label-width="120px">
-              <el-form-item label="应用名称">
-                <span v-text="props.row.appName"></span>
+              <el-form-item label="接口名称">
+                <span v-text="props.row.name"></span>
               </el-form-item>
-              <el-form-item label="应用标识">
-                <span v-text="props.row.appKey"></span>
+              <el-form-item label="拦截路径">
+                <span v-text="props.row.path"></span>
               </el-form-item>
-              <el-form-item label="应用秘钥">
-                <span v-text="props.row.appSecret"></span>
-              </el-form-item>
-              <el-form-item label="推送地址">
-                <span v-text="props.row.url"></span>
+              <el-form-item label="拦截表达式">
+                <span v-text="props.row.typeExp"></span>
               </el-form-item>
               <el-form-item label="接口认证">
                 <http-auth-builder :value="props.row.httpAuth" display="show"></http-auth-builder>
-              </el-form-item>
-              <el-form-item label="结果解析表达式">
-                <span v-text="props.row.resultExp"></span>
               </el-form-item>
             </el-form>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="选择" width="50" align="center">
-        <template slot-scope="scope">
-          <el-radio v-model="selectRow" :label="scope.row.id"><i></i></el-radio>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="应用名称" align="center" prop="appName" :show-overflow-tooltip="true"/>
-      <el-table-column label="应用标识" align="center" prop="appKey" :show-overflow-tooltip="true"/>
-      <el-table-column label="应用秘钥" align="center" prop="appSecret" :show-overflow-tooltip="true"/>
-      <el-table-column label="推送地址" align="center" prop="url" :show-overflow-tooltip="true"/>
+      <el-table-column label="接口名称" align="center" prop="name" :show-overflow-tooltip="true"/>
+      <el-table-column label="拦截路径" align="center" prop="path" :show-overflow-tooltip="true"/>
+      <el-table-column label="拦截表达式" align="center" prop="typeExp" :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" width="110" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -79,7 +63,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <sys-app-edit ref="refSysAppEdit" @refresh="getList"></sys-app-edit>
+    <entry-api-edit ref="refEntryApiEdit" @refresh="loadList()"></entry-api-edit>
   </div>
 </template>
 
@@ -87,7 +71,7 @@
 export default {
   name: "sys-app-list",
   components: {
-    'sys-app-edit': () => import('./sys-app-edit'),
+    'entry-api-edit': () => import('@/views/entry-api/entry-api-edit'),
     'http-auth-builder': () => import('@/components/http-auth-builder'),
   },
   data() {
@@ -95,47 +79,34 @@ export default {
       // 遮罩层
       loading: false,
       dataList: [],
-      selectRow: '',
+      typeId: '',
     };
   },
-  mounted() {
-    this.getList();
-  },
   methods: {
-    getList() {
+    loadList(row) {
       this.loading = true;
-      this.$http.get(`/api/v1/sys_app`)
+      if (row) {
+        this.typeId = row.id;
+      }
+      this.$http.get(`/api/v1/entry_api/list`, {params: {typeId: this.typeId}})
         .then(res => {
           this.dataList = res;
-          if (this.dataList.length > 0) {
-            const firstItem = this.dataList[0];
-            this.rowClickHandler(firstItem);
-            this.currentRowChange(firstItem);
-          }
         })
         .finally(() => {
           this.loading = false;
         });
     },
-    rowClickHandler(row) {
-      this.selectRow = row.id;
-    },
-    currentRowChange(row) {
-      if (row) {
-        this.$emit('rowChange', row);
-      }
-    },
     /** 修改按钮操作 */
     openEditDialog(row) {
-      this.$refs.refSysAppEdit.open(row);
+      this.$refs.refEntryApiEdit.open(this.typeId, row);
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$modal.confirm(`是否确认删除【${row.appName}】数据项？`)
+      this.$modal.confirm(`是否确认删除【${row.name}】数据项？`)
         .then(() => {
-          return this.$http.delete(`/api/v1/sys_app/${row.id}`);
+          return this.$http.delete(`/api/v1/entry_api/${row.id}`);
         }).then(() => {
-        this.getList();
+        this.loadList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {
       });

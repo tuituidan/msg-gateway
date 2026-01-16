@@ -1,24 +1,21 @@
 package com.tuituidan.openhub.service;
 
-import com.tuituidan.openhub.bean.dto.HttpAuthDto;
 import com.tuituidan.openhub.bean.dto.SysEntryApiDto;
 import com.tuituidan.openhub.bean.entity.SysEntryApi;
 import com.tuituidan.openhub.bean.entity.SysEntryApiType;
 import com.tuituidan.openhub.bean.vo.TreeView;
-import com.tuituidan.openhub.consts.AuthTypeEnum;
 import com.tuituidan.openhub.mapper.SysEntryApiMapper;
 import com.tuituidan.openhub.mapper.SysEntryApiTypeMapper;
 import com.tuituidan.tresdin.mybatis.util.SnowFlake;
 import com.tuituidan.tresdin.util.BeanExtUtils;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.http.MediaType;
@@ -50,47 +47,19 @@ public class SysEntryApiService implements ApplicationRunner {
     @Resource
     private SysEntryApiTypeMapper sysEntryApiTypeMapper;
 
+    @Resource
+    private CacheService cacheService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        //tempInit();
         List<SysEntryApi> entryApis = sysEntryApiMapper.selectAll();
         for (SysEntryApi entryApi : entryApis) {
             registerMapping(entryApi);
         }
     }
 
-    private void tempInit() {
-        SysEntryApiType apiType = new SysEntryApiType().setId(SnowFlake.newId()).setName("主数据接口");
-        sysEntryApiTypeMapper.insert(apiType);
-        Map<String, String> apiMap = new HashMap<>();
-        apiMap.put("cussup", "客商主数据接口");
-        apiMap.put("dept", "部门主数据接口");
-        apiMap.put("company", "机构主数据接口");
-        apiMap.put("emp", "人员主数据接口");
-        apiMap.put("project", "项目主数据接口");
-        apiMap.put("tecsub", "科研课题主数据接口");
-        apiMap.put("user", "用户主数据接口");
-        HttpAuthDto httpAuth = new HttpAuthDto()
-                .setAuthType(AuthTypeEnum.BASIC.getType())
-                .setBasicUsername("admin")
-                .setBasicPassword("Admin2024xbjsQAQ");
-        for (Entry<String, String> entry : apiMap.entrySet()) {
-            SysEntryApi entryApi = new SysEntryApi()
-                    .setId(SnowFlake.newId())
-                    .setName(entry.getValue())
-                    .setPath("/mid-data/receive/data")
-                    .setTypeId(apiType.getId())
-                    .setHttpAuth(httpAuth)
-                    .setTypeExp("#dataType == '" + entry.getKey() + "'");
-            sysEntryApiMapper.insertSelective(entryApi);
-        }
-        SysEntryApi entryApi = new SysEntryApi()
-                .setId(SnowFlake.newId())
-                .setName("公共基础主数据接口")
-                .setPath("/mid-data/receive/data")
-                .setTypeId(apiType.getId())
-                .setHttpAuth(httpAuth);
-        sysEntryApiMapper.insertSelective(entryApi);
+    public List<SysEntryApi> selectList(SysEntryApi search) {
+        return sysEntryApiMapper.select(search);
     }
 
     public List<TreeView> entryApiTree() {
@@ -122,22 +91,26 @@ public class SysEntryApiService implements ApplicationRunner {
         entryApi.setId(SnowFlake.newId());
         registerMapping(entryApi);
         sysEntryApiMapper.insert(entryApi);
+        cacheService.refreshEntryApiViewCache(entryApi.getId());
     }
 
     public void update(Long id, SysEntryApiDto entryApiDto) {
         checkRepeat(id, entryApiDto);
         SysEntryApi oldEntryApi = sysEntryApiMapper.selectByPrimaryKey(id);
         if (Objects.equals(oldEntryApi.getPath(), entryApiDto.getPath())) {
-            BeanExtUtils.copyProperties(entryApiDto, oldEntryApi);
+            BeanUtils.copyProperties(entryApiDto, oldEntryApi);
             sysEntryApiMapper.updateByPrimaryKeySelective(oldEntryApi);
+            cacheService.refreshEntryApiViewCache(id);
             return;
         }
         // path不相同也应该判断是否有关联业务数据？
         requestMappingHandlerMapping.unregisterMapping(buildRequestMappingInfo(oldEntryApi));
-        BeanExtUtils.copyProperties(entryApiDto, oldEntryApi);
+        BeanUtils.copyProperties(entryApiDto, oldEntryApi);
         requestMappingHandlerMapping.registerMapping(buildRequestMappingInfo(oldEntryApi),
                 msgGatewayService, msgGatewayService.getMethod());
         sysEntryApiMapper.updateByPrimaryKeySelective(oldEntryApi);
+
+        cacheService.refreshEntryApiViewCache(id);
     }
 
     private void registerMapping(SysEntryApi entryApi) {
@@ -156,10 +129,12 @@ public class SysEntryApiService implements ApplicationRunner {
         Assert.isTrue(CollectionUtils.isEmpty(extList), "已经存在相同接口，相同表达式的接口");
     }
 
-    public void remove(Long id) {
+    public void delete(Long id) {
         SysEntryApi entryApi = sysEntryApiMapper.selectByPrimaryKey(id);
         // 需要判断有没有关联的业务数据，否则不允许删除
         requestMappingHandlerMapping.unregisterMapping(buildRequestMappingInfo(entryApi));
+        sysEntryApiMapper.deleteByPrimaryKey(id);
+        cacheService.refreshEntryApiViewCache(id);
     }
 
     private RequestMappingInfo buildRequestMappingInfo(SysEntryApi entryApi) {
