@@ -1,9 +1,11 @@
 package com.tuituidan.openhub.config;
 
 import javax.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,11 +26,16 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@ConfigurationProperties(prefix = "spring.security")
 public class SecurityConfig {
 
-    @Value("${spring.security.enabled:false}")
-    private Boolean securityEnabled;
+    @Getter
+    @Setter
+    private Boolean enabled;
 
+    @Getter
+    @Setter
+    private String[] permitUrl;
     /**
      * filterChain
      *
@@ -40,11 +47,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.headers().frameOptions().disable();
         http.csrf().disable();
-        if (BooleanUtils.isTrue(securityEnabled)) {
+        if (BooleanUtils.isTrue(enabled)) {
             setLogin(http.formLogin());
             setLogout(http.logout());
-            http.authorizeHttpRequests().antMatchers("/api/v1/**")
-                    .authenticated().anyRequest().permitAll();
+            http.authorizeHttpRequests()
+                    .antMatchers(permitUrl).permitAll()
+                    .antMatchers("/api/v1/**").authenticated()
+                    .anyRequest().permitAll();
             http.exceptionHandling().defaultAuthenticationEntryPointFor((request, response, ex) ->
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED),
                     request -> "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")));

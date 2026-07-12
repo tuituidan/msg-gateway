@@ -1,12 +1,12 @@
 <template>
-  <div class="has-logo" :style="{ backgroundColor: variables.menuBackground }">
+  <div class="has-logo sidebar-theme-wrapper theme-light" :style="{ backgroundColor: variables.menuLightBackground }">
     <logo :collapse="isCollapse"/>
-    <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
+    <el-scrollbar class="theme-light" wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
-        :background-color="variables.menuBackground"
-        :text-color="variables.menuColor"
+        :background-color="variables.menuLightBackground"
+        :text-color="variables.menuLightColor"
         :unique-opened="true"
         :active-text-color="settings.theme"
         :collapse-transition="false"
@@ -67,11 +67,6 @@ export default {
               path: 'api',
               name: 'api-log',
               meta: {title: '接口日志', icon: 'dashboard'},
-            },
-            {
-              path: 'push',
-              name: 'push-log',
-              meta: {title: '推送日志', icon: 'dashboard'}
             },
           ],
         },

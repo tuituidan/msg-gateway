@@ -23,20 +23,6 @@
                   readonly show-word-limit></el-input>
       </el-col>
     </el-row>
-    <el-table class="push-log-table" :data="pushLogList" border>
-      <el-table-column label="序号" type="index" width="50" align="center"/>
-      <el-table-column label="应用名称" align="center" prop="appName" show-overflow-tooltip/>
-      <el-table-column label="推送状态" align="center" prop="status" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === '01'" type="success" effect="plain">成功</el-tag>
-          <el-tag v-else type="danger" effect="plain">失败</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="推送结果" align="center" prop="response" show-overflow-tooltip/>
-      <el-table-column label="推送时间" align="center" prop="pushTime" show-overflow-tooltip/>
-      <el-table-column label="推送耗时(毫秒)" align="center" prop="costTime" show-overflow-tooltip/>
-      <el-table-column label="推送次数" align="center" prop="pushTimes" show-overflow-tooltip/>
-    </el-table>
   </div>
 </template>
 
@@ -54,7 +40,6 @@ export default {
         pushAppCount: '',
         createTime: ''
       },
-      pushLogList: [],
     };
   },
   mounted() {
@@ -64,13 +49,7 @@ export default {
     loadData() {
       this.$http.get(`/api/v1/log/api_log/${this.$route.params.id}`)
         .then(res => {
-          res.pushAppCount = 0;
           this.form = res;
-        });
-      this.$http.get(`/api/v1/log/api_log/${this.$route.params.id}/push_log`)
-        .then(res => {
-          this.pushLogList = res;
-          this.form.pushAppCount = this.pushLogList.length;
         });
     },
     goBack() {

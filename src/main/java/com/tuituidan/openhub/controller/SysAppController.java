@@ -30,25 +30,6 @@ public class SysAppController {
     private SysAppService sysAppService;
 
     /**
-     * selectApiIdsByAppId
-     *
-     * @param appId appId
-     * @return List
-     */
-    @GetMapping("/{appId}/api")
-    public List<Long> selectApiIdsByAppId(@PathVariable Long appId) {
-        return sysAppService.selectApiIdsByAppId(appId);
-    }
-
-    /**
-     * saveAppApi
-     */
-    @PostMapping("/{appId}/api")
-    public void saveAppApi(@PathVariable Long appId, @RequestBody Long[] ids) {
-        sysAppService.saveAppApi(appId, ids);
-    }
-
-    /**
      * selectAll
      *
      * @return List

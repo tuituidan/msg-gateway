@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-row :gutter="10">
       <el-col :span="8">
-        <entry-api-type @rowChange="rowChange"></entry-api-type>
+        <entry-api-type @rowChange="rowChange" @typeChange="typeChange"></entry-api-type>
       </el-col>
       <el-col :span="16">
         <entry-api-list ref="refEntryApiList"></entry-api-list>
@@ -18,11 +18,12 @@ export default {
     'entry-api-type': () => import('@/views/entry-api/entry-api-type'),
     'entry-api-list': () => import('@/views/entry-api/entry-api-list'),
   },
-  mounted() {
-  },
   methods: {
     rowChange(row) {
       this.$refs.refEntryApiList.loadList(row);
+    },
+    typeChange() {
+      this.$refs.refEntryApiList.loadTypeList();
     },
   },
 }

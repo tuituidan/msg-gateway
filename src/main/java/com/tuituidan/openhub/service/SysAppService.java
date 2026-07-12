@@ -2,17 +2,12 @@ package com.tuituidan.openhub.service;
 
 import com.tuituidan.openhub.bean.dto.SysAppDto;
 import com.tuituidan.openhub.bean.entity.SysApp;
-import com.tuituidan.openhub.bean.entity.SysAppApiRef;
-import com.tuituidan.openhub.mapper.SysAppApiRefMapper;
 import com.tuituidan.openhub.mapper.SysAppMapper;
 import com.tuituidan.openhub.util.HttpAuthUtils;
 import com.tuituidan.tresdin.util.BeanExtUtils;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.annotation.Resource;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -30,31 +25,7 @@ public class SysAppService {
     private SysAppMapper sysAppMapper;
 
     @Resource
-    private SysAppApiRefMapper sysAppApiRefMapper;
-
-    @Resource
     private CacheService cacheService;
-
-    /**
-     * selectApiIdsByAppId
-     *
-     * @param appId appId
-     * @return List
-     */
-    public List<Long> selectApiIdsByAppId(Long appId) {
-        return sysAppApiRefMapper.select(new SysAppApiRef().setAppId(appId)).stream()
-                .map(SysAppApiRef::getEntryApiId).collect(Collectors.toList());
-    }
-
-    public void saveAppApi(Long appId, Long[] apiIds) {
-        sysAppApiRefMapper.delete(new SysAppApiRef().setAppId(appId));
-        if (ArrayUtils.isNotEmpty(apiIds)) {
-            sysAppApiRefMapper.insertList(Arrays.stream(apiIds)
-                    .map(apiId -> new SysAppApiRef().setAppId(appId)
-                            .setEntryApiId(apiId)).collect(Collectors.toList()));
-        }
-        cacheService.refreshAppViewCache(appId);
-    }
 
     /**
      * selectAll
@@ -81,7 +52,7 @@ public class SysAppService {
             saveItem.setId(id);
             sysAppMapper.updateByPrimaryKeySelective(saveItem);
         }
-        cacheService.refreshAppViewCache(saveItem.getId());
+        cacheService.getAppViewCache().invalidate(saveItem.getId());
     }
 
     private void checkUnique(Long id, SysAppDto param) {
@@ -97,7 +68,7 @@ public class SysAppService {
      */
     public void delete(Long id) {
         sysAppMapper.deleteByPrimaryKey(id);
-        cacheService.refreshAppViewCache(id);
+        cacheService.getAppViewCache().invalidate(id);
     }
 
 }

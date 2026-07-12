@@ -62,12 +62,6 @@ export const constantRoutes = [
         meta: {title: '接口日志详情', icon: 'dashboard'}
       },
       {
-        path: '/log/push',
-        component: () => import('@/views/push-log/index'),
-        name: 'push-log',
-        meta: {title: '推送日志', icon: 'dashboard'}
-      },
-      {
         path: '/system/entry-api',
         component: () => import('@/views/entry-api/index'),
         name: 'entry-api',
@@ -81,6 +75,11 @@ export const constantRoutes = [
       },
     ],
 
+  },
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
   },
 ]
 

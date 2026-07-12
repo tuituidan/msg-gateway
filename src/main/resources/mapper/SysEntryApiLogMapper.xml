@@ -9,7 +9,6 @@
         `path`,
         client_ip,
         status,
-        (select count(*) from sys_push_log WHERE log_id = apiLog.id) AS push_app_count,
         create_time,
         update_time
         FROM sys_entry_api_log apiLog

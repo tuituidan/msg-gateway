@@ -83,6 +83,9 @@ export default {
     };
   },
   methods: {
+    loadTypeList() {
+      this.$refs.refEntryApiEdit.loadTypeList();
+    },
     loadList(row) {
       this.loading = true;
       if (row) {

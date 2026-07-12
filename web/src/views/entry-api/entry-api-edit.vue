@@ -84,10 +84,10 @@ export default {
     }
   },
   mounted() {
-    this.getTypeList();
+    this.loadTypeList();
   },
   methods: {
-    getTypeList() {
+    loadTypeList() {
       this.$http.get(`/api/v1/entry_api_type/list`)
         .then(res => {
           this.typeList = res;

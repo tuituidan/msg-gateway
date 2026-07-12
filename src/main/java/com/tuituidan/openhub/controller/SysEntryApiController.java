@@ -2,7 +2,6 @@ package com.tuituidan.openhub.controller;
 
 import com.tuituidan.openhub.bean.dto.SysEntryApiDto;
 import com.tuituidan.openhub.bean.entity.SysEntryApi;
-import com.tuituidan.openhub.bean.vo.TreeView;
 import com.tuituidan.openhub.service.SysEntryApiService;
 import com.tuituidan.tresdin.consts.TresdinConsts;
 import java.util.List;
@@ -29,11 +28,6 @@ public class SysEntryApiController {
 
     @Resource
     private SysEntryApiService sysEntryApiService;
-
-    @GetMapping("/tree")
-    public List<TreeView> entryApiTree() {
-        return sysEntryApiService.entryApiTree();
-    }
 
     @GetMapping("/list")
     public List<SysEntryApi> selectList(SysEntryApi search) {

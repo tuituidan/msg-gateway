@@ -1,10 +1,7 @@
 package com.tuituidan.openhub.controller;
 
 import com.tuituidan.openhub.bean.entity.SysEntryApiLog;
-import com.tuituidan.openhub.bean.entity.SysPushLog;
 import com.tuituidan.openhub.bean.vo.SysEntryApiLogView;
-import com.tuituidan.openhub.bean.vo.SysPushLogView;
-import com.tuituidan.openhub.service.MsgPushService;
 import com.tuituidan.openhub.service.SysLogService;
 import com.tuituidan.tresdin.consts.TresdinConsts;
 import com.tuituidan.tresdin.datatranslate.annotation.DataTranslate;
@@ -14,7 +11,6 @@ import java.util.List;
 import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,9 +28,6 @@ public class SysLogController {
     @Resource
     private SysLogService sysLogService;
 
-    @Resource
-    private MsgPushService msgPushService;
-
     @GetMapping("/api_log/page")
     @DataTranslate
     public PageData<List<SysEntryApiLogView>> selectApiLogPage(PageParam pageParam, SysEntryApiLog search) {
@@ -46,32 +39,4 @@ public class SysLogController {
     public SysEntryApiLogView selectApiLogById(@PathVariable Long id) {
         return sysLogService.selectApiLogById(id);
     }
-
-    @GetMapping("/api_log/{apiLogId}/push_log")
-    @DataTranslate
-    public List<SysPushLogView> selectPushLogByAppId(@PathVariable Long apiLogId) {
-        return sysLogService.selectPushLogByAppId(apiLogId);
-    }
-
-    @GetMapping("/push_log/page")
-    @DataTranslate
-    public PageData<List<SysPushLogView>> selectPushLogPage(PageParam pageParam, SysPushLog search) {
-        return sysLogService.selectPushLogPage(pageParam, search);
-    }
-
-    @GetMapping("/push_log/fail_count")
-    public List<Long> getFailPushLogIds() {
-        return sysLogService.getFailPushLogIds();
-    }
-
-    /**
-     * rePushToApp
-     *
-     * @param id id
-     */
-    @PostMapping("/push_log/{id}")
-    public void rePushToApp(@PathVariable Long id) {
-        msgPushService.rePushToApp(id);
-    }
-
 }

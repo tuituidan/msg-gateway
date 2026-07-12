@@ -2,15 +2,10 @@ package com.tuituidan.openhub.service;
 
 import com.tuituidan.openhub.bean.dto.SysEntryApiDto;
 import com.tuituidan.openhub.bean.entity.SysEntryApi;
-import com.tuituidan.openhub.bean.entity.SysEntryApiType;
-import com.tuituidan.openhub.bean.vo.TreeView;
 import com.tuituidan.openhub.mapper.SysEntryApiMapper;
-import com.tuituidan.openhub.mapper.SysEntryApiTypeMapper;
 import com.tuituidan.tresdin.mybatis.util.SnowFlake;
 import com.tuituidan.tresdin.util.BeanExtUtils;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
@@ -45,9 +40,6 @@ public class SysEntryApiService implements ApplicationRunner {
     private MsgGatewayService msgGatewayService;
 
     @Resource
-    private SysEntryApiTypeMapper sysEntryApiTypeMapper;
-
-    @Resource
     private CacheService cacheService;
 
     @Override
@@ -62,36 +54,13 @@ public class SysEntryApiService implements ApplicationRunner {
         return sysEntryApiMapper.select(search);
     }
 
-    public List<TreeView> entryApiTree() {
-        List<SysEntryApiType> typeList = sysEntryApiTypeMapper.selectAll();
-        List<SysEntryApi> apiList = sysEntryApiMapper.selectAll();
-        Map<Long, List<SysEntryApi>> apiMap = apiList.stream().collect(Collectors.groupingBy(SysEntryApi::getTypeId));
-        List<TreeView> result = new ArrayList<>();
-        for (SysEntryApiType type : typeList) {
-            List<SysEntryApi> children = apiMap.get(type.getId());
-            if (CollectionUtils.isNotEmpty(children)) {
-                TreeView view = new TreeView();
-                view.setId(type.getId().toString());
-                view.setName(type.getName());
-                view.setChildren(children.stream()
-                        .map(it -> new TreeView()
-                                .setId(it.getId().toString())
-                                .setName(it.getName())
-                                .setPid(type.getId().toString()))
-                        .collect(Collectors.toList()));
-                result.add(view);
-            }
-        }
-        return result;
-    }
-
     public void add(SysEntryApiDto entryApiDto) {
         checkRepeat(null, entryApiDto);
         SysEntryApi entryApi = BeanExtUtils.convert(entryApiDto, SysEntryApi::new);
         entryApi.setId(SnowFlake.newId());
         registerMapping(entryApi);
         sysEntryApiMapper.insert(entryApi);
-        cacheService.refreshEntryApiViewCache(entryApi.getId());
+        cacheService.getEntryApiViewCache().invalidate(entryApi.getId());
     }
 
     public void update(Long id, SysEntryApiDto entryApiDto) {
@@ -100,7 +69,7 @@ public class SysEntryApiService implements ApplicationRunner {
         if (Objects.equals(oldEntryApi.getPath(), entryApiDto.getPath())) {
             BeanUtils.copyProperties(entryApiDto, oldEntryApi);
             sysEntryApiMapper.updateByPrimaryKeySelective(oldEntryApi);
-            cacheService.refreshEntryApiViewCache(id);
+            cacheService.getEntryApiViewCache().invalidate(oldEntryApi.getId());
             return;
         }
         // path不相同也应该判断是否有关联业务数据？
@@ -109,8 +78,7 @@ public class SysEntryApiService implements ApplicationRunner {
         requestMappingHandlerMapping.registerMapping(buildRequestMappingInfo(oldEntryApi),
                 msgGatewayService, msgGatewayService.getMethod());
         sysEntryApiMapper.updateByPrimaryKeySelective(oldEntryApi);
-
-        cacheService.refreshEntryApiViewCache(id);
+        cacheService.getEntryApiViewCache().invalidate(oldEntryApi.getId());
     }
 
     private void registerMapping(SysEntryApi entryApi) {
@@ -134,7 +102,7 @@ public class SysEntryApiService implements ApplicationRunner {
         // 需要判断有没有关联的业务数据，否则不允许删除
         requestMappingHandlerMapping.unregisterMapping(buildRequestMappingInfo(entryApi));
         sysEntryApiMapper.deleteByPrimaryKey(id);
-        cacheService.refreshEntryApiViewCache(id);
+        cacheService.getEntryApiViewCache().invalidate(id);
     }
 
     private RequestMappingInfo buildRequestMappingInfo(SysEntryApi entryApi) {

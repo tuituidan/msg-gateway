@@ -1,7 +1,7 @@
 const state = {
   title: '',
   theme: '#409EFF',
-  sideTheme: 'theme-dark',
+  sideTheme: 'theme-light',
 }
 
 

@@ -13,7 +13,6 @@ import com.tuituidan.openhub.util.HttpAuthUtils;
 import com.tuituidan.tresdin.mybatis.util.SnowFlake;
 import com.tuituidan.tresdin.util.ExpParserUtils;
 import com.tuituidan.tresdin.util.RequestUtils;
-import com.tuituidan.tresdin.util.thread.CompletableUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -47,11 +46,10 @@ public class MsgGatewayService {
     @Resource
     private SysEntryApiLogMapper sysEntryApiLogMapper;
 
-    @Resource
-    private MsgPushService msgPushService;
 
     @Resource
     private CacheService cacheService;
+
 
     @ResponseBody
     public AjaxResult<String> msgGateway() {
@@ -86,10 +84,7 @@ public class MsgGatewayService {
         }
         for (SysEntryApiView item : validApiList) {
             Long logId = insertEntryApiLog(item, httpRequest, EntryStatusEnum.SUCCESS);
-            if (CollectionUtils.isNotEmpty(item.getAppList())) {
-                CompletableUtils.runAsync(() -> msgPushService.push(logId, item.getAppList(),
-                        httpRequest), "receive-pool");
-            }
+            // todo try to execute handler
         }
         return AjaxResult.success();
     }

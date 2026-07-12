@@ -6,7 +6,6 @@ import com.tuituidan.openhub.bean.dto.HttpAuthDto;
 import com.tuituidan.openhub.consts.Consts;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -44,7 +43,5 @@ public class SysEntryApiView implements Serializable {
     @JsonFormat(pattern = Consts.TIME_PATTERN)
     @JSONField(format = Consts.TIME_PATTERN)
     private LocalDateTime updateTime;
-
-    private List<SysAppView> appList;
 
 }

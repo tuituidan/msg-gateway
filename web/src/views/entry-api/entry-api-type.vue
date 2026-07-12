@@ -100,9 +100,10 @@ export default {
       }).then(({value}) => {
         this.$http.save('/api/v1/entry_api_type', {id: row ? row.id : '', name: value})
           .then(() => {
-            this.$modal.msgSuccess("保存成功");
             this.show = false;
             this.getList();
+            this.$emit('typeChange', row);
+            this.$modal.msgSuccess("保存成功");
           });
       }).catch(() => {
       });
@@ -114,6 +115,7 @@ export default {
           return this.$http.delete(`/api/v1/entry_api_type/${row.id}`);
         }).then(() => {
         this.getList();
+        this.$emit('typeChange', row);
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {
       });

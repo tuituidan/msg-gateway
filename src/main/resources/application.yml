@@ -1,29 +1,60 @@
+server:
+  port: 8084
 spring:
+  application:
+    name: msg-gateway
+  autoconfigure:
+    exclude: com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
   datasource:
-    url: jdbc:log4jdbc:mysql://127.0.0.1:3306/msg_gateway?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    username: ENC#ZIZ0vdjV6HBQEGKi3FNIy9gYfs4GvaGBxHYj8MZfkC0ZtSFdGOUmgBOAT8y6uHYD
-    password: ENC#ktHZOyAxa09PASaXGnaWhEbn9VPaz8hs2T8TAHTZrHKn6HE1nxaxzlLhREqS3bvm
+    url: useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    druid:
+      stat-view-servlet:
+        enabled: false
+    dynamic:
+      druid:
+        initial-size: 5
+        max-active: 8
+        min-idle: 3
+        max-wait: 1000
+        validation-query: 'select 1'
+      primary: local-mysql8
+      strict: false
+      # 懒加载 启动的时候不会检查数据库连通性
+      lazy: false
+      datasource:
+        # 本地测试数据库
+        local-mysql8:
+          driver-class-name: ${spring.datasource.driver-class-name}
+          url: jdbc:p6spy:mysql://localhost:3306/msg_gateway?${spring.datasource.url}
+          username: ENC#ZIZ0vdjV6HBQEGKi3FNIy9gYfs4GvaGBxHYj8MZfkC0ZtSFdGOUmgBOAT8y6uHYD
+          password: ENC#ktHZOyAxa09PASaXGnaWhEbn9VPaz8hs2T8TAHTZrHKn6HE1nxaxzlLhREqS3bvm
   sql:
     init:
       schema-locations: classpath:sql/schema.sql
       mode: always
-  application:
-    name: msg-gateway
   jackson:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 50GB
+  thymeleaf:
+    cache: false
   security:
     enabled: true
     user:
       name: ENC#AeYXP81qEjiOJOYh1eIJE/cz52owOCVqubBkLdBFVZutGJBl8+YPjfgfI9gHtvBy
       password: ENC#qC2k83W3O6otgxFfo3/n0N8bMgOXuZkDoLiCKcnmLnKVzRRuJlj95aZu7yARSYiJ
+    permit-url:
+      - /openapi/**
 mybatis:
   base-packages: com.tuituidan.openhub.mapper
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.tuituidan.openhub.bean.entity
-server:
-  port: 8084
+  configuration:
+    map-underscore-to-camel-case: true
 
 dictionary:
   # 数据字典类型，xlsx-从excel中获取，database-从数据库中获取，需要配置查询sql，remote-远程获取，需要配置url

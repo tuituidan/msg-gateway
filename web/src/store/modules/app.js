@@ -4,10 +4,8 @@ const state = {
   sidebar: {
     opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : true,
     withoutAnimation: false,
-    hide: false
+    hide: false,
   },
-  device: 'desktop',
-  size: Cookies.get('size') || 'medium'
 }
 
 const mutations = {

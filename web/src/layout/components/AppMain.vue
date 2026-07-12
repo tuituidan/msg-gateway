@@ -25,22 +25,34 @@ export default {
   width: 100%;
   position: relative;
   overflow: hidden;
+
+  &:fullscreen,
+  &:-webkit-full-screen,
+  &:-moz-full-screen,
+  &:-ms-fullscreen {
+    background: #fff;
+    overflow-y: auto;
+  }
 }
 
 .fixed-header + .app-main {
-  padding-top: 50px;
+  overflow-y: auto;
+  scrollbar-gutter: auto;
+  height: calc(100vh - 50px);
+  min-height: 0px;
+}
+
+.app-main:has(.copyright) {
+  padding-bottom: 36px;
+}
+
+.fixed-header + .app-main {
+  margin-top: 50px;
 }
 
 </style>
 
 <style lang="scss">
-// fix css style bug in open el-dialog
-.el-popup-parent--hidden {
-  .fixed-header {
-    padding-right: 6px;
-  }
-}
-
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

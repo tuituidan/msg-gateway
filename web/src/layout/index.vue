@@ -1,5 +1,5 @@
 <template>
-  <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
+  <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme, '--current-color-light': theme + '1a', '--current-color-dark-bg': theme + '33'}">
     <sidebar v-if="!sidebar.hide" class="sidebar-container"/>
     <div :class="{sidebarHide:sidebar.hide}" class="main-container">
       <div class="fixed-header">
@@ -12,7 +12,6 @@
 
 <script>
 import { AppMain, Navbar, Sidebar } from './components'
-import ResizeMixin from './mixin/ResizeHandler'
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
 
@@ -23,13 +22,11 @@ export default {
     Navbar,
     Sidebar,
   },
-  mixins: [ResizeMixin],
   computed: {
     ...mapState({
       theme: state => state.settings.theme,
       sideTheme: state => state.settings.sideTheme,
       sidebar: state => state.app.sidebar,
-      device: state => state.app.device,
     }),
     classObj() {
       return {
@@ -39,13 +36,13 @@ export default {
       }
     },
     variables() {
-      return variables;
+      return variables
     }
   },
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-    }
+    },
   }
 }
 </script>
@@ -64,6 +61,11 @@ export default {
       position: fixed;
       top: 0;
     }
+  }
+
+  .main-container:has(.fixed-header) {
+    height: 100vh;
+    overflow: hidden;
   }
 
   .drawer-bg {
